@@ -9,13 +9,13 @@ import requests
 API_KEY: str = open("xai.key", "r").read().strip()
 GROK_URL: str = "https://api.x.ai/v1/chat/completions"
 INIT_PROMPT: str = open("personal_prompt.key", "r").read().strip()
-QUERY_FILE = "query.key"
-EDITOR_ALIAS = "hx"
+QUERY_FILE: str = "query.key"
+EDITOR_ALIAS: str = "hx"
 
 
 class Grok:
     def __init__(self):
-        pass
+        self.linked_response = []
 
     def get_query(self) -> str:
         query = INIT_PROMPT + " " + " ".join(sys.argv[1:])
@@ -42,6 +42,17 @@ class Grok:
 
     def extract_first_response(self, ans) -> str:
         return ans.json()['choices'][0]['message']['content']
+
+    def link_response(self, response):
+        self.linked_response.append(response)
+
+    def last_reponse(self) -> str:
+        return self.linked_response.pop()
+
+    def reresponse(self) -> str:
+        additional = open_with_editor(True)
+        query = self.get_query(self.last_reponse()) + " " + additional
+        return self.grok_query(query)
 
 
 def open_with_editor(cleared: bool):
